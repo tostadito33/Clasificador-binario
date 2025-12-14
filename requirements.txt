@@ -3,6 +3,7 @@ uvicorn
 joblib
 numpy
 pandas
-scikit-learn
+scikit-learn==1.7.2
 sentence-transformers
 lightgbm
+torch --index-url https://download.pytorch.org/whl/cpu

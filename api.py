@@ -9,7 +9,7 @@ from kfold import clean_text
 artifacts = joblib.load("kfold.joblib")
 models = artifacts["models"]
 threshold = artifacts["threshold"]
-embed_model_name = artifacts["embed_model_name"]
+embed_model_name = "sentence-transformers/all-MiniLM-L6-v2"
 
 st = SentenceTransformer(embed_model_name)
 
