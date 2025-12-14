@@ -1,0 +1,232 @@
+Entrenar: python .\best_pipeline.py --train --data Tweets.parquet --save best_model.joblib
+Probar desde fichero: python .\best_pipeline.py --predict-file tweets.txt --load best_model.joblib
+
+Crear entorno virtual: python -m venv mi_entorno
+Activar entorno virtual: sentiment_2\Scripts\activate
+Requirements: pip install sentence-transformers lightgbm scikit-learn pandas joblib
+________________________________________________________________________________________
+Modelo: all-MiniLM-L6-v2
+________________________________________________________________________________________
+
+
+Resultados: Tweets.parquet
+
+Chosen threshold: 0.5201954547423608
+
+Test results:
+Accuracy: 0.8652
+Precision: 0.8874 Recall: 0.8509 F1: 0.8688
+Confusion matrix:
+[[1028  139]
+ [ 192 1096]]
+________________________________________________________________________________________
+
+
+Resultados: tweets_100k.parquet
+
+Chosen threshold: 0.46627674157696647
+
+Test results:
+Accuracy: 0.7737
+Precision: 0.7585 Recall: 0.8044 F1: 0.7807
+Confusion matrix:
+[[5549 1921]
+ [1467 6032]]
+ 
+________________________________________________________________________________________
+Modelo: all-mpnet-base-v2
+________________________________________________________________________________________
+
+
+Resultados: Tweets.parquet
+
+Chosen threshold: 0.6576445379519246
+
+Test results:
+Accuracy: 0.8680
+Precision: 0.9288 Recall: 0.8106 F1: 0.8657
+Confusion matrix:
+[[1087   80]
+ [ 244 1044]]
+________________________________________________________________________________________
+
+
+Resultados: tweets_100k.parquet
+
+Chosen threshold: 0.5230397037647646
+
+Test results:
+Accuracy: 0.7981
+Precision: 0.8024 Recall: 0.7921 F1: 0.7972
+Confusion matrix:
+[[6007 1463]
+ [1559 5940]]
+________________________________________________________________________________________
+
+
+Resultados: tweets_combinados.parquet
+
+Chosen threshold: 0.5044634476888387
+
+Test results:
+Accuracy: 0.8161416818521778
+Precision: 0.8157209056877587 Recall: 0.8170885814577741 F1: 0.8164041707756867
+Confusion matrix:
+[[98583 22349]
+ [22146 98929]]
+________________________________________________________________________________________
+
+
+20/50 Positive
+9/50 Positive
+7/50 Positive
+
+4/50 Negative
+13/50 Negative
+13/50 Negative
+
+________________________________________________________________________________________
+1º vs Kfold
+________________________________________________________________________________________
+
+original.py:
+Test results:
+Accuracy: 0.8680244399185336
+Precision: 0.9288256227758007 Recall: 0.8105590062111802 F1: 0.8656716417910447
+Confusion matrix:
+[[1087   80]
+ [ 244 1044]]
+
+Kfold.py:
+Test results:
+Accuracy: 0.8745417515274949
+Precision: 0.8740458015267175 Recall: 0.8889751552795031 F1: 0.8814472671285605
+Confusion matrix:
+[[1002  165]
+ [ 143 1145]]
+
+Kfold2.py:
+Resultados Test:
+Accuracy: 0.8725050916496945
+Precision: 0.8776142525174283 Recall: 0.8796583850931677 F1: 0.8786351298953082
+Matriz de confusión:
+[[1009  158]
+ [ 155 1133]]
+
+Kfold3.py:
+Resultados Test:
+Accuracy: 0.8753564154786151
+Precision: 0.8854003139717426 Recall: 0.8757763975155279 F1: 0.8805620608899297
+Confusion matrix:
+ [[1021  146]
+ [ 160 1128]]
+
+Kfold4.py:
+Resultados Test (meta):
+Accuracy: 0.8696  
+Precision: 0.8938  Recall: 0.8528  F1: 0.8728  AP: 0.9524
+Confusion matrix:
+ [[2073  261]
+ [ 379 2196]]
+
+Kfold5.py:
+Test Results - Acc: 0.8702 Prec: 0.8907 Rec: 0.8579 F1: 0.8740 AP: 0.9520
+Confusion matrix:
+ [[2063  271]
+ [ 366 2209]]
+
+Kfold6.py:
+Resultados en TEST:
+Precision=0.859 Recall=0.873 F1=0.866
+Confusion matrix:
+[[np.int64(1309), np.int64(247)], [np.int64(218), np.int64(1499)]]
+
+
+
+| Modelo          | Acc       | Prec      | Recall    | F1        | Perfil                      |
+| --------------- | --------- | --------- | --------- | --------- | --------------------------- |
+| **original.py** | 0.868     | **0.929** | 0.811     | 0.866     | Muy conservador (pocos FP)  |
+| **kfold.py**    | 0.875     | 0.874     | **0.889** | **0.881** | Recall alto                 |
+| **kfold2.py**   | 0.873     | 0.878     | 0.880     | 0.879     | Equilibrado                 |
+| **kfold3.py**   | **0.875** | 0.885     | 0.876     | 0.881     | Equilibrio + estabilidad    |
+| **kfold4.py**   | 0.870     | 0.894     | 0.853     | 0.873     | Meta-model, AP alto         |
+| **kfold5.py**   | 0.870     | 0.891     | 0.858     | 0.874     | Meta-model estable          |
+| **kfold6.py**   | —         | 0.859     | 0.873     | 0.866     | Más recall, menos precisión |
+
+
+________________________________________________________________________________________
+PRIMERAS PRUBAS
+
+kfold.py:
+ p: 4/50
+ n: 2/50
+
+kfold2.py:
+ p: 3/50
+ n: 2/50
+
+best_pipeline.py: (ELEGIDOS / 1_6)
+ p: 0/50
+ n: 15/50
+
+best_pipeline.py: (ELEGIDOS / 100k)
+ p: 3/50
+ n: 4/50
+________________________________________________________________________________________
+
+(300)
+
+best_pipeline.py: (Tweets)
+ p: 73/300
+ n: 5/300
+
+best_pipeline.py: (100k)
+ p: 16/300
+ n: 39/300
+
+best_pipeline.py: (1_6)
+ p: 8/300
+ n: 93/300
+
+kfold.py: (Tweets) 44
+ p: 25/300
+ n: 19/300
+
+kfold.py: (100k)
+ p: 14/300
+ n: 50/300
+
+kfold2.py: (Tweets) 47
+ p: 36/300
+ n: 11/300
+
+____________________________________________________________________________________________
+
+(100 / Tweets)
+
+kfold: 44 + 15 + 50 = 109
+kfold2: 47 + 18 + 52 = 117
+
+kfold.py:
+ p: 25/300
+ n: 19/300
+
+kfold2.py:
+ p: 36/300
+ n: 11/300
+
+kfold.py: 
+ p: 10/100
+ n: 5/100
+
+kfold2.py: 
+ p: 13/100
+ n: 5/100
+ 
+kfold.py: 
+ p: 24/100
+ n: 26/100
+
+kfold2.py: 
+ p: 32/100
+ n: 20/100
