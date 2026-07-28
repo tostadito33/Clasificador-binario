@@ -21,12 +21,11 @@ Uso rápido:
 from __future__ import annotations
 import argparse
 import os
-import re
-import sys
 from typing import List
 import joblib
 import numpy as np
 import pandas as pd
+from text_utils import clean_text
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -40,26 +39,6 @@ except Exception:
 
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.metrics import confusion_matrix, precision_recall_curve, precision_recall_fscore_support
-
-
-# ----------------------
-# Utils
-# ----------------------
-
-def clean_text(s: str) -> str:
-    if not isinstance(s, str):
-        s = str(s)
-    s = s.lower()
-    s = re.sub(r"http\S+", "", s)
-    s = re.sub(r"www\.[^\s]+", "", s)
-    s = re.sub(r"@\w+", "", s)
-    s = re.sub(r"\$\w+", "", s)
-    s = re.sub(r"#", "", s)
-    s = re.sub(r"[^\w\s\.,!?áéíóúüñ]", " ", s)
-    s = re.sub(r"(.)\1{2,}", r"\1\1", s)
-    s = re.sub(r"\d{2,}", " ", s)
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
 
 
 def load_dataset(path: str, text_col_candidates=None, label_col_candidates=None, drop_neutral=True):
@@ -179,6 +158,16 @@ def train_lightgbm(X_train, y_train, X_val, y_val, params=None):
     return clf
 
 
+def positive_class_probability(model, features):
+    """Devuelve P(clase positiva) sin advertencias de nombres de columnas."""
+    booster = getattr(model, 'booster_', None)
+    if booster is not None:
+        return np.asarray(booster.predict(features))
+    if hasattr(model, 'predict_proba'):
+        return np.asarray(model.predict_proba(features)[:, 1])
+    return np.asarray(model.predict(features), dtype=float)
+
+
 def sweep_thresholds(y_true, y_prob, step=0.01):
     rows = []
     thresholds = np.arange(0.0, 1.0 + 1e-9, step)
@@ -250,7 +239,7 @@ def train_and_save(data_path, save_path='best_model.joblib', embed_model_name='a
 
     # ensemble predictions (average probabilities)
     def ensemble_proba(models, X):
-        probs = np.vstack([m.predict_proba(X)[:,1] if hasattr(m, 'predict_proba') else m.predict(X) for m in models])
+        probs = np.vstack([positive_class_probability(m, X) for m in models])
         return probs.mean(axis=0)
 
     # choose threshold using val (ensemble)
@@ -309,12 +298,14 @@ def predict_file(file_path, model_path='best_model.joblib'):
     X_emb = st.encode(texts, show_progress_bar=False)
 
     if isinstance(models, list):
-        probs = np.vstack([m.predict_proba(X_emb)[:,1] if hasattr(m, 'predict_proba') else m.predict(X_emb) for m in models]).mean(axis=0)
+        probs = np.vstack([
+            positive_class_probability(m, X_emb) for m in models
+        ]).mean(axis=0)
         preds = (probs >= thresh).astype(int)
     else:
         model = models
-        probs = model.predict_proba(X_emb)[:,1] if hasattr(model, 'predict_proba') else None
-        preds = (probs >= thresh).astype(int) if probs is not None else model.predict(X_emb)
+        probs = positive_class_probability(model, X_emb)
+        preds = (probs >= thresh).astype(int)
         
     pos_count = 0
     neg_count = 0
@@ -355,14 +346,16 @@ def interactive(model_path='best_model.joblib'):
             t = clean_text(txt)
             emb = st.encode([t], show_progress_bar=False)
             if isinstance(models, list):
-                probs = np.vstack([m.predict_proba(emb)[:,1] if hasattr(m, 'predict_proba') else m.predict(emb) for m in models]).mean(axis=0)
+                probs = np.vstack([
+                    positive_class_probability(m, emb) for m in models
+                ]).mean(axis=0)
                 pr = float(probs[0])
                 lab = 'positive' if pr >= thresh else 'negative'
                 print(lab, f"{pr:.4f}")
             else:
                 model = models
                 if hasattr(model, 'predict_proba'):
-                    pr = float(model.predict_proba(emb)[:,1][0])
+                    pr = float(positive_class_probability(model, emb)[0])
                     lab = 'positive' if pr >= thresh else 'negative'
                     print(lab, f"{pr:.4f}")
                 else:
@@ -376,7 +369,7 @@ def interactive(model_path='best_model.joblib'):
 def main():
     parser = argparse.ArgumentParser(description='Train/eval/predict sentiment model (con StratifiedKFold ensemble)')
     parser.add_argument('--train', action='store_true')
-    parser.add_argument('--data', default='Tweets.parquet.parquet')
+    parser.add_argument('--data', default='Tweets.parquet')
     parser.add_argument('--save', default='best_model.joblib')
     parser.add_argument('--predict-file', help='File with one tweet per line')
     parser.add_argument('--interactive', action='store_true')

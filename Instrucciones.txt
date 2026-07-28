@@ -1,5 +1,7 @@
-Entrenar: python .\best_pipeline.py --train --data Tweets.parquet --save best_model.joblib
-Probar desde fichero: python .\best_pipeline.py --predict-file tweets.txt --load best_model.joblib
+Consulta README.md para la instalación, las pruebas, la API y el despliegue.
+
+Entrenar: python .\kfold.py --train --data Tweets.parquet --save kfold.joblib
+Probar desde fichero: python .\kfold.py --predict-file tweets.txt --load kfold.joblib
 
 Crear entorno virtual: python -m venv mi_entorno
 Activar entorno virtual: sentiment_2\Scripts\activate

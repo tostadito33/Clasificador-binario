@@ -1,0 +1,44 @@
+name: bitcoin-sentiment-chatbot
+region: fra
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+
+services:
+  - name: api
+    github:
+      repo: tostadito33/Clasificador-binario
+      branch: deploy/digitalocean-app-platform
+      deploy_on_push: true
+    source_dir: /
+    dockerfile_path: Dockerfile
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-2gb
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 120
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 12
+    liveness_health_check:
+      http_path: /health
+      initial_delay_seconds: 120
+      period_seconds: 30
+      timeout_seconds: 5
+      failure_threshold: 5
+    envs:
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+        scope: RUN_TIME
+        type: GENERAL
+      - key: OPENAI_TIMEOUT_SECONDS
+        value: "20"
+        scope: RUN_TIME
+        type: GENERAL
+      - key: LOG_LEVEL
+        value: INFO
+        scope: RUN_TIME
+        type: GENERAL

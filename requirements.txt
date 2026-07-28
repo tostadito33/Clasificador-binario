@@ -1,10 +1,8 @@
-fastapi
-uvicorn
-joblib
-numpy
-pandas
+fastapi==0.124.4
+uvicorn[standard]==0.38.0
+joblib==1.5.2
+numpy==1.26.4
 scikit-learn==1.7.2
-sentence-transformers
-lightgbm
-openai
-torch --index-url https://download.pytorch.org/whl/cpu
+sentence-transformers==3.4.1
+lightgbm==4.6.0
+openai==1.109.1

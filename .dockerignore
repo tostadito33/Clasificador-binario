@@ -1,0 +1,16 @@
+.git
+.github
+.pytest_cache
+__pycache__
+*.py[cod]
+.env*
+.venv
+venv
+tests
+
+Tweets.parquet
+tweets.txt
+Instrucciones.txt
+requirements-dev.txt
+requirements-test.txt
+README.md
